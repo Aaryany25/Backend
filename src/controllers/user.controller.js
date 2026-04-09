@@ -1,10 +1,69 @@
 import { AsyncHandler } from "../utils/asyncHandler.js";
-
-
+import {APIError} from "../utils/APIerror.js"
+import { APIresponse } from "../utils/APIresponse.js";
+import {User} from "../models/User.model.js"
+import {uploadonCloudinary} from "../utils/Cloudinary.js"
 const RegisterUser = AsyncHandler(async (req,res)=>{
-    res.status(200).json({
-        message:"ok"
+  
+    // get the user details from Frontend 
+    // check of required fileds - Validation
+    // Check for existing User 
+    // check for Images 
+    // upload it to clodinary 
+    // create the onject in the db 
+    // remove password and refreshToken from the response 
+    // Check for user Creation 
+    //  send response 
+    const {fullName,email,username, password} = req.body
+    console.log(fullName,email,username)
+    if(
+        [fullName,email,username,password].some((field)=>
+            field?.trim()==="")
+    ){
+throw new APIError(
+    400,"all Fields are required !!"
+)
+    }
+
+    const ExistedUser = User.findOne({
+        $or:[{username},{email}]
     })
+    if(ExistedUser){
+        throw new APIError(409,"User Already Exists ")
+    }
+    const AvatarLocalPath = req.files?.avatar[0]?.path;
+    const CoverImageLocalPath = req.files?.coverImage[0]?.path;
+
+    console.log(AvatarLocalPath)
+    console.log(CoverImageLocalPath)
+    if(!AvatarLocalPath){
+        throw new APIError(400,"Avatar is Required!!")
+    }
+
+   const avatar=   await uploadonCloudinary(AvatarLocalPath)
+    const coverImage = await uploadonCloudinary(CoverImageLocalPath)
+    if(!avatar){
+        throw new APIError(400,"Avatar is Required!!")
+    }
+ const user =  await  User.create({
+        fullName,
+        avatar:avatar.url,
+        coverImage:coverImage?.url || "",
+        username : username.toLowerCase() ,
+        email ,
+        password 
+    })
+
+  const CreatedUser =  await User.findById(user._id).select(
+    "-password -refreshtoken"
+)
+if(!CreatedUser){
+    throw new APIError(500,"Cant Registed the User")
+}
+ 
+return res.status(201).json(
+    new APIresponse(201,CreatedUser,"User Created Successfully !")
+)
 })
 
 export {RegisterUser}
