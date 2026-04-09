@@ -1,23 +1,16 @@
-import express from "express";
 import connectDB from "./db/dbConnect.js";
-
-const app = express()
+import { app } from "./app.js";
 connectDB()
 .then(()=>{
-    app.listen(3000,()=>{
-    console.log("Server is Started")
+    app.listen(process.env.PORT,()=>{
+    console.log("Server is Started on ")
 })
 })
 .catch((error)=>{
     console.log("MongoDb connection Failed !!!".error)
 });
 app.get("/",(req,res)=>{
-res.json({
-    message:"server toh chal rha hai bhai "
-})
-})
-app.get("/twiiter",(req,res)=>{
-    res.send({
-        message:"Main bhi chal rha hu "
+    res.status(200).json({
+        message:"ok"
     })
 })

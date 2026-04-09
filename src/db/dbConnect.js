@@ -1,6 +1,5 @@
 import  dotenv from "dotenv"
 import mongoose from "mongoose"
-import express from "express"
 dotenv.config()
 // MongoDB Connection Logic
 const connectDB = async () => {
