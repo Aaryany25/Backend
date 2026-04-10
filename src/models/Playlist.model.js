@@ -6,8 +6,9 @@ name:{
 },
 desc:{
     type:String,
+    required:true
 },
-user:{
+owner:{
     type:Schema.Types.ObjectId,
     ref:"User"
 },

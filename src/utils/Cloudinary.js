@@ -15,8 +15,10 @@ cloudinary.config({
     resource_type:'auto'
   })
 //   File has been uploaded succesfully 
-console.log("File is uploaded on cloudinary",response.url)
+// console.log("File is uploaded on cloudinary",response.url)
+fs.unlinkSync(localpath)
 return response
+
 //   .then(result=>console.log(result));
         } catch (error) {
             fs.unlink(localpath) //remve the save temp file when the operation is failed
@@ -24,4 +26,4 @@ return response
         }
     }
 
-    export {uploadOnCloudinary}
+export default uploadOnCloudinary

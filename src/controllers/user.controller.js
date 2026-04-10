@@ -2,7 +2,8 @@ import { AsyncHandler } from "../utils/asyncHandler.js";
 import {APIError} from "../utils/APIerror.js"
 import { APIresponse } from "../utils/APIresponse.js";
 import {User} from "../models/User.model.js"
-import {uploadonCloudinary} from "../utils/Cloudinary.js"
+import uploadonCloudinary from "../utils/Cloudinary.js"
+
 const RegisterUser = AsyncHandler(async (req,res)=>{
   
     // get the user details from Frontend 
@@ -15,7 +16,7 @@ const RegisterUser = AsyncHandler(async (req,res)=>{
     // Check for user Creation 
     //  send response 
     const {fullName,email,username, password} = req.body
-    console.log(fullName,email,username)
+    // console.log(fullName,email,username)
     if(
         [fullName,email,username,password].some((field)=>
             field?.trim()==="")
@@ -25,7 +26,7 @@ throw new APIError(
 )
     }
 
-    const ExistedUser = User.findOne({
+    const ExistedUser = await User.findOne({
         $or:[{username},{email}]
     })
     if(ExistedUser){
@@ -34,8 +35,6 @@ throw new APIError(
     const AvatarLocalPath = req.files?.avatar[0]?.path;
     const CoverImageLocalPath = req.files?.coverImage[0]?.path;
 
-    console.log(AvatarLocalPath)
-    console.log(CoverImageLocalPath)
     if(!AvatarLocalPath){
         throw new APIError(400,"Avatar is Required!!")
     }
@@ -66,4 +65,29 @@ return res.status(201).json(
 )
 })
 
-export {RegisterUser}
+const LoginUser = AsyncHandler(async(req,res)=>{
+    // Take username , email and password from frontned 
+    // check if the user exsist with the username or email 
+    // Validate the password 
+    // generate  access token and refresh token 
+    // Send Cookies 
+    // send response
+const {username,email,password} = req.body 
+if(!username || !email){
+      throw new APIError(400,"Email or Username is required")
+}
+
+const ExistedUser = await User.findOne({
+        $or:[{username},{email}]
+    })
+
+    if(!ExistedUser){
+        throw new APIError(409,"No user Found ")
+    }
+
+  const  isPasswordValid = await ExistedUser.isPasswordCorrect(password)
+if(!isPasswordValid){
+        throw new APIError(401,"incorrect password")
+    }
+})
+export {RegisterUser,LoginUser}

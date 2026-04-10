@@ -3,7 +3,7 @@ import mongoose ,{Schema} from "mongoose";
 const CommentSchema = new Schema({
 content:{
     type:String,
-
+    required:true
 },
 video:{
     type:Schema.Types.ObjectId,

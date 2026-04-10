@@ -20,3 +20,5 @@ tweet:{
 },{
     timestamps:true
 })
+
+export const Like = mongoose.model("Like",LikeSchema)
