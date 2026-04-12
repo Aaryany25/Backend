@@ -4,6 +4,22 @@ import { APIresponse } from "../utils/APIresponse.js";
 import {User} from "../models/User.model.js"
 import uploadonCloudinary from "../utils/Cloudinary.js"
 
+const generateAccessTokenandRefreshToken = async(userid)=>{
+    try {
+        const user = await User.findById(userid)
+        const accesstoken = user.generateAccessToken()
+        const refreshtoken = user.generateRefreshToken()
+
+        // Saving the Refresh Token in the DB 
+        user.refreshtoken = refreshtoken
+        await user.save({validateBeforeSave: false })
+        return {accessToken, refreshToken}
+
+    } catch (error) {
+        throw new APIError(500,"something went wring with access or refreshtoken")
+    }
+}
+
 const RegisterUser = AsyncHandler(async (req,res)=>{
   
     // get the user details from Frontend 
@@ -89,5 +105,25 @@ const ExistedUser = await User.findOne({
 if(!isPasswordValid){
         throw new APIError(401,"incorrect password")
     }
+
+   const {accesstoken,refreshtoken} = await  generateAccessTokenandRefreshToken(ExistedUser._id)
+
+//    We are taken the refresh token from the db and setting the cokkies 
+const LoggedInUser = await User.findById(ExistedUser._id).select("-password -refreshtoken")
+
+const options={
+    httpOnly :true,
+    secure:true 
+
+}
+return res.status(200)
+.cookies("accesstoken",accesstoken,options)
+.cookies("refreshtoken",refreshtoken,options)
+.json(
+    new APIresponse(200,{
+        user:LoggedInUser,accesstoken,refreshtoken
+    },
+"User LoggedIn Successfully ")
+)
 })
 export {RegisterUser,LoginUser}
