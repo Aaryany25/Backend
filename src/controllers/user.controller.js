@@ -13,9 +13,10 @@ const generateAccessTokenandRefreshToken = async(userid)=>{
         // Saving the Refresh Token in the DB 
         user.refreshtoken = refreshtoken
         await user.save({validateBeforeSave: false })
-        return {accessToken, refreshToken}
+        return {accesstoken, refreshtoken}
 
     } catch (error) {
+        console.log(error)
         throw new APIError(500,"something went wring with access or refreshtoken")
     }
 }
@@ -117,8 +118,8 @@ const options={
 
 }
 return res.status(200)
-.cookies("accesstoken",accesstoken,options)
-.cookies("refreshtoken",refreshtoken,options)
+.cookie("accesstoken",accesstoken,options)
+.cookie("refreshtoken",refreshtoken,options)
 .json(
     new APIresponse(200,{
         user:LoggedInUser,accesstoken,refreshtoken
@@ -126,4 +127,29 @@ return res.status(200)
 "User LoggedIn Successfully ")
 )
 })
-export {RegisterUser,LoginUser}
+
+const LogoutUser = AsyncHandler(async(req,res)=>{
+    // console.log(req.user)
+ await User.findByIdAndUpdate(
+    req.user._id,{
+        $set:{
+            refreshtoken:undefined
+        }
+    }
+)
+const options={
+    httpOnly :true,
+    secure:true 
+
+}
+
+return res.status(200)
+.clearCookie("accesstoken",options)
+.clearCookie("refreshtoken",options)
+.json(
+    new APIresponse(200,{},"User Logged Out SuccessFully")
+)
+
+
+})
+export {RegisterUser,LoginUser,LogoutUser}
