@@ -127,7 +127,24 @@ return res.status(200)
 "User LoggedIn Successfully ")
 )
 })
+const RefershAccessToken =()=>{
+    // Get refresh Token from the Cookie
+    const refreshTokenFromUser = req.cookies.refreshToken || req.body.RefershAccessToken
+    // check the refreshtoken
+    if(!refreshTokenFromUser){
+        throw new APIError(401,"Invalid RefreshToken")
+    }
 
+    try {
+        // verify the user
+       const decodedToken = jwt.verify(
+            incomingRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        )
+    } catch (error) {
+        throw new APIError(401,error)
+    }
+}
 const LogoutUser = AsyncHandler(async(req,res)=>{
     // console.log(req.user)
  await User.findByIdAndUpdate(
