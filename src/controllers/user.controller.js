@@ -127,7 +127,7 @@ return res.status(200)
 "User LoggedIn Successfully ")
 )
 })
-const RefershAccessToken =()=>{
+const RefershAccessToken =AsyncHandler(async(req,res)=>{
     // Get refresh Token from the Cookie
     const refreshTokenFromUser = req.cookies.refreshToken || req.body.RefershAccessToken
     // check the refreshtoken
@@ -141,10 +141,34 @@ const RefershAccessToken =()=>{
             incomingRefreshToken,
             process.env.REFRESH_TOKEN_SECRET
         )
+        const user = await User.findById(decodedToken?._id)
+
+        if(!user){
+            throw new APIError(401,"No user Found")
+        }
+        if(refreshTokenFromUser !== user?. refreshtoken){
+             throw new APIError(401,"RefreshToken is Expired")
+        }
+const options={
+    httpOnly :true,
+    secure:true 
+
+}
+const {accesstoken,newRefreshtToken} = await  generateAccessTokenandRefreshToken(user._id)
+return res.status(200)
+.cookie("accesstoken",accesstoken,options)
+.cookie("refreshtoken",refreshtoken,options)
+.json(
+    new APIresponse(200,{
+        accesstoken,newRefreshtToken
+    },
+"AccessToken Refresh SuccessFully ")
+)
+        
     } catch (error) {
         throw new APIError(401,error)
     }
-}
+})
 const LogoutUser = AsyncHandler(async(req,res)=>{
     // console.log(req.user)
  await User.findByIdAndUpdate(
@@ -169,4 +193,4 @@ return res.status(200)
 
 
 })
-export {RegisterUser,LoginUser,LogoutUser}
+export {RegisterUser,LoginUser,LogoutUser,RefershAccessToken}
