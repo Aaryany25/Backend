@@ -3,6 +3,7 @@ import {APIError} from "../utils/APIerror.js"
 import { APIresponse } from "../utils/APIresponse.js";
 import {User} from "../models/User.model.js"
 import uploadonCloudinary from "../utils/Cloudinary.js"
+import { useSyncExternalStore } from "react";
 
 const generateAccessTokenandRefreshToken = async(userid)=>{
     try {
@@ -193,4 +194,30 @@ return res.status(200)
 
 
 })
-export {RegisterUser,LoginUser,LogoutUser,RefershAccessToken}
+
+
+const ChangeUserPassword = AsyncHandler(async(req,res)=>{
+
+    const {oldPassword , newPassword} = req.body 
+
+    const user = req.user.id
+
+    const isPasswordCorrect = user.isPasswordCorrect(oldPassword)
+
+    if(!isPasswordCorrect){
+        throw new APIError(401,"Invalid Old Password")
+    }
+    user.password = newPassword
+
+    await user.save({validateBeforeSave:false})
+
+    return res.status(200).json(
+        new APIresponse(200,{},"Password Changed Successfully ")
+    )
+})
+
+const GetCurrentUser = AsyncHandler(async(req,res)=>{
+    return res.status(200)
+    .json(200,req.user,"Current User")
+})
+export {RegisterUser,LoginUser,LogoutUser,RefershAccessToken , ChangeUserPassword , GetCurrentUser}

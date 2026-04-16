@@ -12,8 +12,3 @@ subscriber:{
 },{timestamps:true})
 
 export const Subscription = mongoose.model("Subscription",SubscriptionSchema)
-
-
-
-
-
