@@ -3,7 +3,7 @@ import {APIError} from "../utils/APIerror.js"
 import { APIresponse } from "../utils/APIresponse.js";
 import {User} from "../models/User.model.js"
 import uploadonCloudinary from "../utils/Cloudinary.js"
-import { useSyncExternalStore } from "react";
+
 
 const generateAccessTokenandRefreshToken = async(userid)=>{
     try {
@@ -200,7 +200,7 @@ const ChangeUserPassword = AsyncHandler(async(req,res)=>{
 
     const {oldPassword , newPassword} = req.body 
 
-    const user = req.user.id
+    const user = req.user._id
 
     const isPasswordCorrect = user.isPasswordCorrect(oldPassword)
 
@@ -220,4 +220,25 @@ const GetCurrentUser = AsyncHandler(async(req,res)=>{
     return res.status(200)
     .json(200,req.user,"Current User")
 })
-export {RegisterUser,LoginUser,LogoutUser,RefershAccessToken , ChangeUserPassword , GetCurrentUser}
+
+const updateAccountDetails = AsyncHandler(async(req,res)=>{
+
+    const {fullname,email}= req.body
+
+    if(!fullname || !email){
+        throw new APIError(401,"fullName or Email Are required")
+    }
+    const user = await User.findByIdAndUpdate(req.user._id,{
+        $set:{
+            fullname,email
+        }
+    },{
+        new:true
+    }).select("-password")
+
+    return res.status(200).json(
+        new APIresponse(200,user,"FullName or Email Updated Successfully")
+    )
+
+})
+export {RegisterUser,LoginUser,LogoutUser,RefershAccessToken , ChangeUserPassword , GetCurrentUser,updateAccountDetails}
